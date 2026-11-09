@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import type { Task } from "./types";
+import { Header } from "./components/Header";
+import { TaskForm } from "./components/TaskForm";
+import { SearchBar } from "./components/SearchBar";
+import { TaskItem } from "./components/TaskItem";
 
 const API_URL = "http://localhost:5000/api/tasks";
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [inputTitle, setInputTitle] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Initialize dark mode state from localStorage or default to false (light mode)
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -42,21 +46,17 @@ function App() {
   }, []);
 
   // Handle create a new task
-  const handleAddTask = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputTitle.trim()) return;
-
+  const handleAddTask = async (title: string) => {
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: inputTitle }),
+        body: JSON.stringify({ title }),
       });
 
       if (response.ok) {
         const newTask = await response.json();
         setTasks([newTask, ...tasks]);
-        setInputTitle("");
       }
     } catch (error) {
       console.error("Failed to add task:", error);
@@ -99,71 +99,38 @@ function App() {
     }
   };
 
+  // Filter tasks in real-time based on search query
+  const filteredTasks = tasks.filter((task) =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
     <div className="min-h-screen py-12 transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white">
       <div className="max-w-md mx-auto p-6 rounded-2xl shadow-xl border transition-all duration-300 bg-white border-gray-100 text-gray-800 dark:bg-slate-900 dark:border-slate-800 dark:text-white">
-        {/* Header with Dark/Light mode toggle */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">
-            FlowTask
-          </h2>
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer bg-slate-800 text-white hover:bg-slate-700 dark:bg-amber-400 dark:text-slate-950 dark:hover:bg-amber-300"
-          >
-            {isDarkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
-          </button>
-        </div>
+        <Header
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+        />
 
-        {/* Create task form */}
-        <form onSubmit={handleAddTask} className="flex gap-2 mb-6">
-          <input
-            type="text"
-            placeholder="Input new task..."
-            value={inputTitle}
-            onChange={(e) => setInputTitle(e.target.value)}
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors bg-white border-gray-300 text-gray-900 placeholder-gray-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-400"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 p-2 rounded-lg font-medium transition-colors cursor-pointer text-sm shadow-sm"
-          >
-            Create
-          </button>
-        </form>
+        <TaskForm onAddTask={handleAddTask} />
 
-        {/* Task list */}
+        <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+
         <ul className="space-y-3">
-          {tasks.length === 0 ? (
+          {filteredTasks.length === 0 ? (
             <p className="text-center text-sm py-4 text-gray-400 dark:text-slate-500">
-              No tasks yet. Create one above!
+              {tasks.length === 0
+                ? "No tasks yet. Create one above!"
+                : "No matching tasks found."}
             </p>
           ) : (
-            tasks.map((task) => (
-              <li
+            filteredTasks.map((task) => (
+              <TaskItem
                 key={task.id}
-                className="flex items-center justify-between p-3 rounded-xl transition-all border bg-gray-50 border-gray-100 hover:bg-gray-100/80 dark:bg-slate-800/50 dark:border-slate-800 dark:hover:bg-slate-800"
-              >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={task.isCompleted}
-                    onChange={() => handleToggleTask(task.id, task.isCompleted)}
-                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span
-                    className={`text-sm font-medium transition-all ${task.isCompleted ? "line-through text-gray-400 dark:text-slate-500" : "text-gray-700 dark:text-slate-200"}`}
-                  >
-                    {task.title}
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleDeleteTask(task.id)}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium cursor-pointer px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-                >
-                  Delete
-                </button>
-              </li>
+                task={task}
+                onToggle={handleToggleTask}
+                onDelete={handleDeleteTask}
+              />
             ))
           )}
         </ul>
