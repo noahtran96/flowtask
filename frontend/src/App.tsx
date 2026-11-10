@@ -4,12 +4,16 @@ import { Header } from "./components/Header";
 import { TaskForm } from "./components/TaskForm";
 import { SearchBar } from "./components/SearchBar";
 import { TaskItem } from "./components/TaskItem";
+import { TaskFilter } from "./components/TaskFilter";
 
 const API_URL = "http://localhost:5000/api/tasks";
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "active" | "completed"
+  >("all");
 
   // Initialize dark mode state from localStorage or default to false (light mode)
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -99,10 +103,16 @@ function App() {
     }
   };
 
-  // Filter tasks in real-time based on search query
-  const filteredTasks = tasks.filter((task) =>
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // Filter tasks based on search query and status filter
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch = task.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    if (filterStatus === "active") return matchesSearch && !task.isCompleted;
+    if (filterStatus === "completed") return matchesSearch && task.isCompleted;
+    return matchesSearch;
+  });
 
   return (
     <div className="min-h-screen py-12 transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white">
@@ -115,6 +125,11 @@ function App() {
         <TaskForm onAddTask={handleAddTask} />
 
         <SearchBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+
+        <TaskFilter
+          currentFilter={filterStatus}
+          onFilterChange={setFilterStatus}
+        />
 
         <ul className="space-y-3">
           {filteredTasks.length === 0 ? (
