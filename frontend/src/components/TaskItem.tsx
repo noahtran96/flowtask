@@ -1,10 +1,17 @@
-import type { Task } from "../types";
+import type { Priority, Task } from "../types";
 
 interface TaskItemProps {
   task: Task;
   onToggle: (id: number, currentStatus: boolean) => void;
   onDelete: (id: number) => void;
 }
+
+const priorityStyles: Record<Priority, string> = {
+  high: "bg-red-100 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-400 dark:border-red-900/50",
+  medium:
+    "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-900/50",
+  low: "bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700",
+};
 
 export function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
   return (
@@ -23,6 +30,13 @@ export function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
           className={`text-sm font-medium transition-all ${task.isCompleted ? "line-through text-gray-400 dark:text-slate-500" : "text-gray-700 dark:text-slate-200"}`}
         >
           {task.title}
+        </span>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <span
+          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${priorityStyles[task.priority || "medium"]}`}
+        >
+          {task.priority || "medium"}
         </span>
       </div>
       <button

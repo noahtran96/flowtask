@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import type { Task } from "./types";
+import type { Priority, Task } from "./types";
 import { Header } from "./components/Header";
 import { TaskForm } from "./components/TaskForm";
 import { SearchBar } from "./components/SearchBar";
@@ -50,12 +50,12 @@ function App() {
   }, []);
 
   // Handle create a new task
-  const handleAddTask = async (title: string) => {
+  const handleAddTask = async (title: string, priority: Priority) => {
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title, priority }),
       });
 
       if (response.ok) {
