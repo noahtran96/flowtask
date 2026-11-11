@@ -23,7 +23,7 @@ app.get("/api/tasks", async (req, res) => {
 // POST
 app.post("/api/tasks", async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, priority } = req.body;
     if (!title || !title.trim()) {
       res.status(400).json({ error: "Task title is required" });
       return;
@@ -32,6 +32,7 @@ app.post("/api/tasks", async (req, res) => {
     const newTask = await prisma.task.create({
       data: {
         title: title.trim(),
+        priority: priority || "medium",
         isCompleted: false,
       },
     });
@@ -45,11 +46,14 @@ app.post("/api/tasks", async (req, res) => {
 app.patch("/api/tasks/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { isCompleted } = req.body;
+    const { isCompleted, priority } = req.body;
 
     const updatedTask = await prisma.task.update({
       where: { id: Number(id) },
-      data: { isCompleted },
+      data: {
+        ...(isCompleted !== undefined && { isCompleted }),
+        ...(priority !== undefined && { priority }),
+      },
     });
     res.json(updatedTask);
   } catch (error) {

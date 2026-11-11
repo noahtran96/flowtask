@@ -1,19 +1,22 @@
 import type React from "react";
 import { useState } from "react";
+import type { Priority } from "../types";
 
 interface TaskFormProps {
-  onAddTask: (title: string) => Promise<void>;
+  onAddTask: (title: string, priority: Priority) => Promise<void>;
 }
 
 export function TaskForm({ onAddTask }: TaskFormProps) {
   const [inputTitle, setInputTitle] = useState("");
+  const [priority, setPriority] = useState<Priority>("medium");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputTitle.trim()) return;
 
-    await onAddTask(inputTitle);
+    await onAddTask(inputTitle, priority);
     setInputTitle("");
+    setPriority("medium");
   };
 
   return (
@@ -25,6 +28,15 @@ export function TaskForm({ onAddTask }: TaskFormProps) {
         onChange={(e) => setInputTitle(e.target.value)}
         className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-colors bg-white border-gray-300 text-gray-900 placeholder-gray-400 dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-400"
       />
+      <select
+        value={priority}
+        onChange={(e) => setPriority(e.target.value as Priority)}
+        className="px-2 py-2 border rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 border-gray-300 text-gray-700 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200 cursor-pointer"
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
       <button
         type="submit"
         className="bg-blue-600 hover:bg-blue-700 text-white px-4 p-2 rounded-lg font-medium transition-colors cursor-pointer text-sm shadow-sm"
