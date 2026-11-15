@@ -10,6 +10,7 @@ datasource db {
 model Task {
   id          Int      @id @default(autoincrement())
   title       String
+  description String?
   isCompleted Boolean  @default(false)
   priority    String   @default("medium")
   createdAt   DateTime @default(now())
