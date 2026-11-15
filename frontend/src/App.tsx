@@ -114,6 +114,26 @@ function App() {
     return matchesSearch;
   });
 
+  // Handle task rich notes/description
+  const handleUpdateDescription = async (id: number, description: string) => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description }),
+      });
+
+      if (response.ok) {
+        const updatedTask: Task = await response.json();
+        setTasks((prev) =>
+          prev.map((task) => (task.id === id ? updatedTask : task)),
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update task description:", error);
+    }
+  };
+
   return (
     <div className="min-h-screen py-12 transition-colors duration-300 bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white">
       <div className="max-w-md mx-auto p-6 rounded-2xl shadow-xl border transition-all duration-300 bg-white border-gray-100 text-gray-800 dark:bg-slate-900 dark:border-slate-800 dark:text-white">
@@ -144,6 +164,7 @@ function App() {
                 key={task.id}
                 task={task}
                 onToggle={handleToggleTask}
+                onUpdateDescription={handleUpdateDescription}
                 onDelete={handleDeleteTask}
               />
             ))
